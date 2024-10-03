@@ -90,9 +90,19 @@ const updateUserProfile = async(req:Request,res:Response) => {
 //@desc    logout
 //route    POST /api/users/logout
 //@access  Public
-const logout = async(req:Request,res:Response) => {
-    res.status(200).json({message:'user logout'})
-}
+const logout = asyncHandler( async(req:Request,res:Response) => {
+
+    res.cookie(
+        'jwt',
+        "",
+        {
+            httpOnly:true,
+            expires: new Date(0)
+        }
+    )
+
+    res.status(200).json({message:'User logged out'})
+})
 
 
 export {
