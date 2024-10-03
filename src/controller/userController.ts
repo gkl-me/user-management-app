@@ -7,9 +7,23 @@ import generateToken from '../utils/generateToken'
 //@desc    authUser
 //route    POST /api/users/login
 //@access  Public
-const authUser = async(req:Request,res:Response) => {
-    res.status(200).json({message:'Auth user'})
-}
+const authUser = asyncHandler( async(req:Request,res:Response) => {
+
+    const {email,password} = req.body;
+
+    const user = await User.findOne({email})
+    if(user && (await user.matchPassword(password))){
+        generateToken(res,user._id)
+        res.status(201).json({
+            _id:user._id,
+            name:user.name,
+            email:user.email
+        })
+    }else{
+        res.status(401)
+        throw new Error('Invalid email or password')
+    } 
+})
 
 
 //@desc    registerUser
@@ -27,6 +41,7 @@ const registerUser = asyncHandler(async (req:Request,res:Response) => {
         res.status(400)
         throw new Error('Invalid email')
     }
+
 
     if(!validator.isStrongPassword(password)){
         res.status(400)
