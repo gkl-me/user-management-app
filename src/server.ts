@@ -5,6 +5,7 @@ import userRouter from './routes/userRoutes'
 
 //mongodb connect
 import connectDB from './config/db';
+import { errorHandler, notFound } from './middleware/errorMiddleware';
 connectDB()
 
 
@@ -16,6 +17,10 @@ app.use(express.urlencoded({extended:true}))
 
 //routes
 app.use('/api/users',userRouter)
+
+//middlwares
+app.use(notFound)
+app.use(errorHandler)
 
 app.get('/',(req,res) => {
     res.send('Hello word')
