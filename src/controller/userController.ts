@@ -2,6 +2,7 @@ import { Request, Response } from 'express'
 import asyncHandler from 'express-async-handler'
 import validator  from 'validator'
 import User from '../models/userModel'
+import generateToken from '../utils/generateToken'
 
 //@desc    authUser
 //route    POST /api/users/login
@@ -43,7 +44,8 @@ const registerUser = asyncHandler(async (req:Request,res:Response) => {
     })
 
     if(user){
-        res.status(200).json({
+        generateToken(res,user._id)
+        res.status(201).json({
             _id:user._id,
             name:user.name,
             email:user.email
