@@ -9,7 +9,7 @@ export interface AuthenticatedRequest extends Request {
 } 
 
 
-const protect = asyncHandler( async(req:AuthenticatedRequest,res:Response,next:NextFunction) => {
+const userAuth = asyncHandler( async(req:AuthenticatedRequest,res:Response,next:NextFunction) => {
     let token;
 
     token = req.cookies.jwt;
@@ -17,7 +17,6 @@ const protect = asyncHandler( async(req:AuthenticatedRequest,res:Response,next:N
     if(token) {
 
         try {
-
             const decoded = jwt.verify(token,process.env.JWT_SECRET!) as {id :string}
             req.user = await User.findById(decoded.id).select('-password')
             next();
@@ -35,5 +34,5 @@ const protect = asyncHandler( async(req:AuthenticatedRequest,res:Response,next:N
 })
 
 export {
-    protect
+    userAuth
 }

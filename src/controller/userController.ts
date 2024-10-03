@@ -3,6 +3,7 @@ import asyncHandler from 'express-async-handler'
 import validator  from 'validator'
 import User from '../models/userModel'
 import generateToken from '../utils/generateToken'
+import { AuthenticatedRequest } from '../middleware/authMiddleware'
 
 //@desc    authUser
 //route    POST /api/users/login
@@ -75,9 +76,10 @@ const registerUser = asyncHandler(async (req:Request,res:Response) => {
 //@desc    getUserProfile
 //route    GET /api/users/profile
 //@access  Private
-const getUserProfile = async(req:Request,res:Response) => {
-    res.status(200).json({message:'user profile'})
-}
+const getUserProfile =asyncHandler( async(req:AuthenticatedRequest,res:Response) => {
+    const user = req.user
+    res.status(200).json(user)
+})
 
 
 //@desc    updateUserProfile
