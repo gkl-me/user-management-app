@@ -2,6 +2,7 @@ import express from 'express'
 import dotenv from 'dotenv'
 dotenv.config();
 import userRouter from './routes/userRoutes'
+import cookieParser from 'cookie-parser';
 
 //mongodb connect
 import connectDB from './config/db';
@@ -13,7 +14,8 @@ const port = process.env.PORT || 3000
 const app = express()
 
 app.use(express.json())
-app.use(express.urlencoded({extended:true}))
+app.use(express.urlencoded({extended:true}));
+app.use(cookieParser());
 
 //routes
 app.use('/api/users',userRouter)
