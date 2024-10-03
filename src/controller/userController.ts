@@ -4,6 +4,8 @@ import validator  from 'validator'
 import User from '../models/userModel'
 import generateToken from '../utils/generateToken'
 import { AuthenticatedRequest } from '../middleware/authMiddleware'
+import path from 'path'
+import fs from 'fs'
 
 //@desc    authUser
 //route    POST /api/users/login
@@ -84,10 +86,44 @@ const getUserProfile =asyncHandler( async(req:AuthenticatedRequest,res:Response)
 
 //@desc    updateUserProfile
 //route    PUT /api/users/profile
-//@access  Public
-const updateUserProfile = async(req:Request,res:Response) => {
-    res.status(200).json({message:'update user'})
-}
+//@access  Private
+const updateUserProfile =asyncHandler( async(req:AuthenticatedRequest,res:Response) => {
+
+    const user = await User.findById(req.user._id);
+
+    if(user){
+
+        user.name = req.body.name || user.name;
+        user.email = req.body.name || user.email;
+
+        if(req.body.password){
+            user.password = req.body.password;
+        }
+
+        if(req.file){
+            if(user.image){
+                const oldImagePath = path.join(__dirname,'..','..',user.image);
+                if(fs.existsSync(oldImagePath)){
+                    fs.unlinkSync(oldImagePath);
+                }
+            }
+            user.image = req.file.path;
+        }
+        const updatedUser = await user.save();
+        res.status(200).json(
+           {
+            _id:updatedUser._id,
+            name:updatedUser.name,
+            email:updatedUser.email,
+            image:updatedUser.image
+           }
+        )
+        
+    }else{
+        res.status(404)
+        throw new Error('User not found')
+    }
+})
 
 //@desc    logout
 //route    POST /api/users/logout
