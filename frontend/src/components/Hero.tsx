@@ -14,7 +14,7 @@ const Hero:React.FC = () => {
             <Link to={'/login'}>
             <Button variant={'light'} size={'lg'}>Login</Button>
             </Link>
-            <Link to={'sigup'}>
+            <Link to={'signup'}>
             <Button variant={'blue'} size={'lg'}>SignUp</Button>
             </Link>
             </div>
