@@ -8,6 +8,9 @@ import LoginPage from './pages/LoginPage.tsx'
 import SignupPage from './pages/SignupPage.tsx'
 import ProfilePage from './pages/ProfilePage.tsx'
 
+import { Provider } from 'react-redux'
+import store from './redux/store.ts'
+
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path='/' element={<App/>}>
@@ -22,6 +25,9 @@ const router = createBrowserRouter(
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
+    <Provider store={store}>
+
     <RouterProvider router={router}/>
+    </Provider>
   </StrictMode>,
 )

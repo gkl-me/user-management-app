@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
@@ -15,7 +15,12 @@ import { Button } from './ui/button'
 
 import google_icon from '../assets/google.svg'
 import web_icon from '../assets/spider-web.svg'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { useAppDispatch, useAppSelector } from '@/redux/store'
+import { useLoginMutation } from '@/redux/slices/usersApiSlice'
+import { setCredentials } from '@/redux/slices/authSlice'
+import { toast } from 'sonner'
+import Loading from './Loading'
 
 
 const formSchema = z.object({
@@ -38,18 +43,39 @@ const Login: React.FC = () => {
     }
   })
 
+    const navigate = useNavigate()
+    const dispatch = useAppDispatch();
+
+    const [login ,{isLoading}] = useLoginMutation();
+
+    const {userInfo} = useAppSelector(state => state.auth)
+
+    useEffect(()=>{
+        if(userInfo){
+            navigate('/profile')
+        }
+    },[userInfo,navigate])
+
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      // Replace with your actual login logic
-      console.log('Form Submitted:', values)
-      // Example: await loginAPI(values)
+
+        const res = await login(values).unwrap();
+        dispatch(setCredentials({...res}))
+        navigate('/profile')
+
     } catch (error) {
-      console.error('Login failed:', error)
-      // Optionally set a global error message
+        if(error && typeof error=='object' && 'data' in error){
+            const errorMessage = error as { data?: { message?: string } };
+            toast(errorMessage.data?.message)
+        }else{
+            toast('Something went wrong')
+        }
     }
   }
 
   return (
+    isLoading ? 
+    <Loading/> :
     <div className=' flex justify-between w-[60%] m-auto mt-20 p-10 shadow-sm rounded-md shadow-blue-400'>
         
     <Form {...form}>
