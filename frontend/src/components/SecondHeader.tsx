@@ -11,8 +11,30 @@ import {
 
 import profile_icon from '../assets/profile.svg'
 import logout_icon from '../assets/logout.svg'
+import { useAppDispatch, useAppSelector } from "@/redux/store";
+import { useLogoutMutation } from "@/redux/slices/usersApiSlice";
+import { logout } from "@/redux/slices/authSlice";
+import { useNavigate } from "react-router-dom";
 
 const SecondHeader: React.FC = () => {
+
+    const {userInfo} = useAppSelector(state => state.auth)
+
+    const [logoutApiCall] = useLogoutMutation();
+    const dispatch = useAppDispatch();
+    const navigate = useNavigate();
+
+    const handleLogout = async () => {
+        try {
+            await logoutApiCall({}).unwrap();
+            dispatch(logout())
+            navigate('/')
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+
   return (
     <div className="flex justify-between items-center w-full h-20 px-32  shadow-sm shadow-blue-600">
       <div className="flex gap-5 items-center">
@@ -27,7 +49,7 @@ const SecondHeader: React.FC = () => {
         <DropdownMenu>
           <DropdownMenuTrigger>
             <Avatar className="hover:shadow-[0_4px_12px_-1px_rgba(59,130,246,0.4)]">
-              <AvatarImage src="" />    
+              <AvatarImage src={userInfo.image} />    
               <AvatarFallback className="text-black">Profile</AvatarFallback>
             </Avatar>
           </DropdownMenuTrigger>
@@ -40,7 +62,7 @@ const SecondHeader: React.FC = () => {
             <DropdownMenuItem className="flex  gap-2 ">
             <img className="w-5 h-4" src={profile_icon} alt="" />
                 Profile</DropdownMenuItem>
-            <DropdownMenuItem className="flex  gap-2">
+            <DropdownMenuItem className="flex  gap-2" onClick={handleLogout}>
             <img className="w-5 h-4" src={logout_icon} alt="" />
                 Logout</DropdownMenuItem>
           </DropdownMenuContent>
