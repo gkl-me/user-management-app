@@ -6,6 +6,7 @@ import './index.css'
 import LandingPage from './pages/LandingPage.tsx'
 import LoginPage from './pages/LoginPage.tsx'
 import SignupPage from './pages/SignupPage.tsx'
+import ProfilePage from './pages/ProfilePage.tsx'
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -13,7 +14,7 @@ const router = createBrowserRouter(
       <Route index={true} path='/' element={<LandingPage/>} />
       <Route path='/login' element={<LoginPage/>} />
       <Route path='/signup' element={<SignupPage/>} />
-      <Route path='/profile' element /> 
+      <Route path='/profile' element={<ProfilePage/>} /> 
     </Route>
   )
 )
