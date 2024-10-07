@@ -66,9 +66,9 @@ const Login: React.FC = () => {
     } catch (error) {
         if(error && typeof error=='object' && 'data' in error){
             const errorMessage = error as { data?: { message?: string } };
-            toast(errorMessage.data?.message)
+            toast.error(errorMessage.data?.message)
         }else{
-            toast('Something went wrong')
+            toast.error('Something went wrong')
         }
     }
   }
