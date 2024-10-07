@@ -1,10 +1,10 @@
 import React from 'react'
-import LandingPage from './pages/LandingPage'
+import { Outlet } from 'react-router-dom'
 
 const App:React.FC = () => {
   return (
     <>
-    <LandingPage />
+    <Outlet />
     </>
   )
 }

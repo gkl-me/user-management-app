@@ -1,6 +1,7 @@
 import React from 'react'
 import { Button } from './ui/button'
 import web_icon from '../assets/spider-web.svg'
+import { Link } from 'react-router-dom'
 
 
 const Hero:React.FC = () => {
@@ -10,8 +11,12 @@ const Hero:React.FC = () => {
             <h1 className='text-6xl font-poppins font-extrabold'>Welcome To Home Page</h1>
             <h1 className='text-gray-400 text-3xl font-thin'>This is the home page </h1>
             <div className='flex gap-3'>
+            <Link to={'/login'}>
             <Button variant={'light'} size={'lg'}>Login</Button>
+            </Link>
+            <Link to={'sigup'}>
             <Button variant={'blue'} size={'lg'}>SignUp</Button>
+            </Link>
             </div>
         </div>
         <div className='w-2/3'>
