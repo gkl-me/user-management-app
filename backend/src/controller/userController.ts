@@ -6,6 +6,7 @@ import generateToken from '../utils/generateToken'
 import { AuthenticatedRequest } from '../middleware/authMiddleware'
 import path from 'path'
 import fs from 'fs'
+import { uploadCloudinary } from '../utils/cloudinary'
 
 //@desc    authUser
 //route    POST /api/users/login
@@ -101,14 +102,32 @@ const updateUserProfile =asyncHandler( async(req:AuthenticatedRequest,res:Respon
         }
 
         if(req.file){
-            if(user.image){
-                const oldImagePath = path.join(__dirname,'..','..',user.image);
-                if(fs.existsSync(oldImagePath)){
-                    fs.unlinkSync(oldImagePath);
+
+            try {
+                
+                const cloudinaryRes = await uploadCloudinary(req.file.path)
+
+
+                if(cloudinaryRes && cloudinaryRes.url){
+                    user.image = cloudinaryRes.url;
+
+                    fs.unlinkSync(req.file.path);
+                }else {
+                    throw new Error('Failed to upload image to cloudinary')
                 }
+
+            } catch (error) {
+
+                if(req.file.path && fs.existsSync(req.file.path)){
+                    fs.unlinkSync(req.file.path);
+                }
+                res.status(400)
+                throw new Error('Error proccessing image upload')
             }
-            user.image = req.file.path;
+
         }
+
+
         const updatedUser = await user.save();
         res.status(200).json(
            {
