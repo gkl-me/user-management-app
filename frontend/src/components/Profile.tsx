@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
@@ -13,66 +13,142 @@ import {
 import { Input } from './ui/input'
 import { Button } from './ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
+import { useGetProfileQuery, useUpdateMutation } from '@/redux/slices/usersApiSlice'
+import Loading from './Loading'
+import { useAppDispatch, useAppSelector } from '@/redux/store'
+import { logout, setCredentials } from '@/redux/slices/authSlice'
+import { toast } from 'sonner'
+import { useNavigate } from 'react-router-dom'
+
 
 
 const formSchema = z.object({
     name:z.string().min(3),
     email: z.string().email({ message: 'Invalid email' }),
-    password: z
-    .string()
-    .min(8, { message: 'Password must be at least 8 characters long' })
-    .regex(/[A-Z]/, { message: 'Password must contain at least one uppercase letter' })
-    .regex(/[a-z]/, { message: 'Password must contain at least one lowercase letter' })
-    .regex(/[0-9]/, { message: 'Password must contain at least one number' })
-    .regex(/[^A-Za-z0-9]/, { message: 'Password must contain at least one special character' }),
-    confirmPassword:z.string()
+    image: z.instanceof(File)
+            .refine((file) => ["image/jpeg", "image/png", "image/gif"].includes(file.type))
+            .optional()
 })
-.refine((data) => data.password === data.confirmPassword, {
-    path: ['confirmPassword'], // This specifies where the error message should appear
-    message: 'Passwords do not match',
-  });
 
   const Profile: React.FC = () => {
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues:{
-        name:"",
-        email: '',
-      password: '',
-      confirmPassword:''    
-    }
-  })
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    try {
-      // Replace with your actual login logic
-      console.log('Form Submitted:', values)
-      // Example: await loginAPI(values)
-    } catch (error) {
-      console.error('Login failed:', error)
-      // Optionally set a global error message
+
+    const [updateProfile,{isLoading:updateLoading}] = useUpdateMutation();
+
+    
+    const dispatch = useAppDispatch();
+    const navigate = useNavigate()
+
+    
+    const { data: profileData, isLoading, isSuccess: profileSuccess, error, refetch } = useGetProfileQuery(undefined,{
+      refetchOnMountOrArgChange:true
+    });
+    console.log(profileData)
+    
+    const {userInfo} = useAppSelector(state => state.auth)
+
+    const form = useForm<z.infer<typeof formSchema>>({
+      resolver: zodResolver(formSchema),
+      defaultValues:{
+          name:userInfo.name,
+          email:userInfo.email,
+          image: undefined  
+      }
+    })
+    
+    useEffect(() => {
+      if (error) {
+        console.log(error)
+        dispatch(logout());
+        toast.error("Your account is not found. Please log in again.");
+        navigate("/login");
+      } else if (profileSuccess) {
+        dispatch(setCredentials({ ...profileData }));
+        form.reset();
+      }
+    }, [error, dispatch, navigate, profileSuccess, profileData,form]);
+  
+    useEffect(() => {
+      if (!userInfo) {
+        refetch();
+      }
+    }, [userInfo, refetch]);
+  
+    const upload_ref = useRef<HTMLInputElement>(null)
+
+
+    
+
+
+  
+    const [previewImage,setPreviewImage]= useState<string|null>(null);
+
+    const handleUploadImage = (e:React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0]
+      if(file){
+        const reader = new FileReader()
+        reader.onloadend = () => {
+          setPreviewImage(reader.result as string)
+        }
+        reader.readAsDataURL(file);
+        form.setValue('image',file)
+      }
+    }
+
+    const resetImageState = () => {
+      form.setValue('image', undefined)
+      if (upload_ref.current) {
+        upload_ref.current.value = ''
+      }
+    }
+
+    const onSubmit = async (values: z.infer<typeof formSchema>) => {
+      try {
+        const formData = new FormData();
+        formData.append('name', values.name);
+        formData.append('email', values.email);
+        if (values.image) {
+          formData.append('image', values.image);
+        }
+    
+        const res = await updateProfile(formData).unwrap();
+        dispatch(setCredentials({...res}))
+        toast.success('Profile Updated')
+
+        resetImageState();
+      } catch (error) {
+        form.reset()
+      if(error && typeof error=='object' && 'data' in error){
+        const errorMessage = error as { data?: { message?: string } };
+        toast.error(errorMessage.data?.message)
+      }else{
+        toast.error('Something went wrong')
+      }
     }
   }
 
 
   return (
+    isLoading || updateLoading ? 
+    <Loading/>
+    :
     <div className="flex justify-around w-[90%]  m-auto my-10 p-10">
       <div className="py-5 flex flex-col justify-center items-center rounded-md shadow-sm shadow-blue-500 w-3/5">
         <div className="flex gap-10 items-center">
           <div>
           <Avatar className="dark size-28">
-            <AvatarImage src="/" />
+            <AvatarImage src={previewImage || userInfo.image} />
             <AvatarFallback>Profile</AvatarFallback>
           </Avatar>
           </div>
           <div className="flex flex-col gap-3">
-          <h1 className="text-xl font-bold">User Name</h1>
+          <h1 className="text-xl font-bold"></h1>
           <div className="flex gap-2">
-            <Button variant={"light"}>
+            <Button 
+
+            onClick={() => upload_ref.current?.click() }
+            variant={"light"}>
               Upload Image
-            </Button>
-            <Button variant={"destructive"}>
-              Delete Image
             </Button>
           </div>
         </div>
@@ -106,31 +182,22 @@ const formSchema = z.object({
             </FormItem>
           )}
         />
-        <FormField
-          control={form.control}
-          name="password"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Password</FormLabel>
-              <FormControl>
-                <Input type="password" placeholder="Password" {...field} />
-              </FormControl>
-              <FormMessage/>
-            </FormItem>
-          )}
-        />
-        <FormField
-            control={form.control}
-            name="confirmPassword"
-            render={({ field }) => (
-                <FormItem>
-                <FormLabel>Confirm Password</FormLabel>
-                <FormControl>
-                    <Input type="password" placeholder="Confirm Password" {...field} />
-                </FormControl>
-                <FormMessage />
-                </FormItem>
-            )}
+        <FormField 
+        control={form.control}
+        name='image'
+        render={({field}) => (
+          <FormItem hidden>
+            <FormLabel>Upload Image</FormLabel>
+            <FormControl>
+              <Input 
+              ref={upload_ref}
+              type='file' onChange={(e) => {
+                handleUploadImage(e)
+                field.onChange(e.target.files?.[0])
+              }}/>
+            </FormControl>
+          </FormItem>
+        )}
         />
         <Button variant={'blue'} type="submit">Update</Button>
       </form>

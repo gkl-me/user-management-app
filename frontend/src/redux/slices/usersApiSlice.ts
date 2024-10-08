@@ -30,8 +30,13 @@ export const userApiSlice = apiSlice.injectEndpoints({
                 body:data
             })
         }),
+        getProfile : bulider.query({
+            query: () => ({
+                url: `${USERS_URL}/profile`,
+            })
+        })
     })
 })
 
 
-export const { useLoginMutation,useLogoutMutation,useRegisterMutation,useUpdateMutation } = userApiSlice;
+export const { useLoginMutation,useLogoutMutation,useRegisterMutation,useUpdateMutation,useGetProfileQuery } = userApiSlice;

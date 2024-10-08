@@ -10,6 +10,7 @@ import ProfilePage from './pages/ProfilePage.tsx'
 
 import { Provider } from 'react-redux'
 import store from './redux/store.ts'
+import PrivateRoute from './components/PrivateRoute.tsx'
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -17,7 +18,12 @@ const router = createBrowserRouter(
       <Route index={true} path='/' element={<LandingPage/>} />
       <Route path='/login' element={<LoginPage/>} />
       <Route path='/signup' element={<SignupPage/>} />
-      <Route path='/profile' element={<ProfilePage/>} /> 
+
+      {/* private routes */}
+
+      <Route path='' element={<PrivateRoute/>}>
+        <Route path='/profile' element={<ProfilePage/>} /> 
+      </Route>
     </Route>
   )
 )
