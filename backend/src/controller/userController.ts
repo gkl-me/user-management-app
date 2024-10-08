@@ -7,6 +7,7 @@ import { AuthenticatedRequest } from '../middleware/authMiddleware'
 import path from 'path'
 import fs from 'fs'
 import { uploadCloudinary } from '../utils/cloudinary'
+import { Error } from 'mongoose'
 
 //@desc    authUser
 //route    POST /api/users/login
@@ -21,7 +22,8 @@ const authUser = asyncHandler( async(req:Request,res:Response) => {
         res.status(201).json({
             _id:user._id,
             name:user.name,
-            email:user.email
+            email:user.email,
+            image:user.image||""
         })
     }else{
         res.status(401)
@@ -47,6 +49,7 @@ const registerUser = asyncHandler(async (req:Request,res:Response) => {
     }
 
 
+
     if(!validator.isStrongPassword(password)){
         res.status(400)
         throw new Error('Password must have of length 8 including UpperCase, LowerCase, Number and Special Char')
@@ -67,7 +70,8 @@ const registerUser = asyncHandler(async (req:Request,res:Response) => {
         res.status(201).json({
             _id:user._id,
             name:user.name,
-            email:user.email
+            email:user.email,
+            image:user.image||""
         })
     }else{
         res.status(400)
@@ -127,8 +131,8 @@ const updateUserProfile =asyncHandler( async(req:AuthenticatedRequest,res:Respon
 
         }
 
-
-        const updatedUser = await user.save();
+        try {
+            const updatedUser = await user.save();
         res.status(200).json(
            {
             _id:updatedUser._id,
@@ -137,6 +141,11 @@ const updateUserProfile =asyncHandler( async(req:AuthenticatedRequest,res:Respon
             image:updatedUser.image
            }
         )
+        } catch (error) {
+            res.status(400)
+            throw new Error('User email already exists')
+        }
+        
         
     }else{
         res.status(404)

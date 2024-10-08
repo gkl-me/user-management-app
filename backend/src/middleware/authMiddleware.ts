@@ -16,15 +16,20 @@ const userAuth = asyncHandler( async(req:AuthenticatedRequest,res:Response,next:
 
     if(token) {
 
-        try {
             const decoded = jwt.verify(token,process.env.JWT_SECRET!) as {id :string}
-            req.user = await User.findById(decoded.id).select('-password')
-            next();
-        } catch (error) {
-            res.status(401)
-            throw new Error('Not authorized ,invalid token')
-
-        }
+            if(decoded){
+                const userfound = await User.findById(decoded.id).select('-password')
+                if(userfound === null){
+                    res.status(401)
+                    throw new Error('User not found')
+                    return;
+                }
+                req.user = userfound
+                next();
+            }else{
+                res.status(401)
+                throw new Error('Not authorized ,invalid token')
+            }
 
     }else {
         res.status(401)
