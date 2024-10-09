@@ -19,6 +19,7 @@ import { useAppDispatch, useAppSelector } from '@/redux/store'
 import { logout, setCredentials } from '@/redux/slices/authSlice'
 import { toast } from 'sonner'
 import { useNavigate } from 'react-router-dom'
+import { apiSlice } from '@/redux/slices/apiSlice'
 
 
 
@@ -40,10 +41,9 @@ const formSchema = z.object({
     const navigate = useNavigate()
 
     
-    const { data: profileData, isLoading, isSuccess: profileSuccess, error, refetch } = useGetProfileQuery(undefined,{
+    const { data: profileData, isLoading, isSuccess: profileSuccess, error } = useGetProfileQuery(undefined,{
       refetchOnMountOrArgChange:true
     });
-    console.log(profileData)
     
     const {userInfo} = useAppSelector(state => state.auth)
 
@@ -55,24 +55,21 @@ const formSchema = z.object({
           image: undefined  
       }
     })
+
+    const {reset} = form
     
     useEffect(() => {
       if (error) {
-        console.log(error)
         dispatch(logout());
-        toast.error("Your account is not found. Please log in again.");
+        dispatch(apiSlice.util.resetApiState())
         navigate("/login");
+        toast.error("Your account is not found. Please log in again.");
       } else if (profileSuccess) {
         dispatch(setCredentials({ ...profileData }));
-        form.reset();
+        reset();
       }
-    }, [error, dispatch, navigate, profileSuccess, profileData,form]);
+    }, [error, dispatch, navigate, profileSuccess, profileData,reset]);
   
-    useEffect(() => {
-      if (!userInfo) {
-        refetch();
-      }
-    }, [userInfo, refetch]);
   
     const upload_ref = useRef<HTMLInputElement>(null)
 
