@@ -2,13 +2,13 @@ import { Response } from 'express';
 import jwt from 'jsonwebtoken'
 import { Types } from 'mongoose';
 
-const generateToken = (res:Response,id:Types.ObjectId) => {
+const generateToken = (res:Response,id:Types.ObjectId|string,cookieName:string) => {
     const token = jwt.sign({id},process.env.JWT_SECRET!,{
         expiresIn:'3d'
     })
     
     res.cookie(
-        'jwt',
+        cookieName,
         token,
         {
             httpOnly:true,

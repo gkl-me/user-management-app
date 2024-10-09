@@ -2,17 +2,17 @@ import jwt from 'jsonwebtoken'
 import asyncHandler from 'express-async-handler'
 import User from '../models/userModel'
 import { NextFunction, Request, Response } from 'express'
-import { throwDeprecation } from 'process'
 
 export interface AuthenticatedRequest extends Request {
     user?:any;
+    admin?:any
 } 
 
 
 const userAuth = asyncHandler( async(req:AuthenticatedRequest,res:Response,next:NextFunction) => {
     let token;
 
-    token = req.cookies.jwt;
+    token = req.cookies.user;
 
     if(token) {
 
@@ -22,7 +22,6 @@ const userAuth = asyncHandler( async(req:AuthenticatedRequest,res:Response,next:
                 if(userfound === null){
                     res.status(401)
                     throw new Error('User not found')
-                    return;
                 }
                 req.user = userfound
                 next();
@@ -38,6 +37,26 @@ const userAuth = asyncHandler( async(req:AuthenticatedRequest,res:Response,next:
 
 })
 
+
+const adminAuth = asyncHandler(async (req:Request,res:Response,next:NextFunction) => {
+    let token;
+    token = req.cookies.admin
+
+    if(token){
+
+        const decoded = jwt.verify(token,process.env.JWT_SECRET!) as {id:string}
+        if(decoded.id==process.env.ADMIN_EMAIL){
+            next()
+        }else{
+            res.status(401)
+            throw new Error('Not authorized,Invalid token')
+        }
+    }else{
+        res.status(401)
+        throw new Error('Not authorized,token not found')
+    }
+})
+
 export {
-    userAuth
+    userAuth,adminAuth
 }

@@ -2,6 +2,7 @@ import express from 'express'
 import dotenv from 'dotenv'
 dotenv.config();
 import userRouter from './routes/userRoutes'
+import adminRouter from './routes/adminRoutes'
 import cookieParser from 'cookie-parser';
 
 //mongodb connect
@@ -21,6 +22,7 @@ app.use(cookieParser());
 
 //routes
 app.use('/api/users',userRouter)
+app.use('/api/admin',adminRouter)
 
 //middlwares
 app.use(notFound)

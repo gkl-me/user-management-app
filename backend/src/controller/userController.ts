@@ -18,7 +18,7 @@ const authUser = asyncHandler( async(req:Request,res:Response) => {
 
     const user = await User.findOne({email})
     if(user && (await user.matchPassword(password))){
-        generateToken(res,user._id)
+        generateToken(res,user._id,'user')
         res.status(201).json({
             _id:user._id,
             name:user.name,
@@ -66,7 +66,7 @@ const registerUser = asyncHandler(async (req:Request,res:Response) => {
     })
 
     if(user){
-        generateToken(res,user._id)
+        generateToken(res,user._id,'user')
         res.status(201).json({
             _id:user._id,
             name:user.name,
@@ -159,11 +159,12 @@ const updateUserProfile =asyncHandler( async(req:AuthenticatedRequest,res:Respon
 const logout = asyncHandler( async(req:Request,res:Response) => {
 
     res.cookie(
-        'jwt',
+        'user',
         "",
         {
             httpOnly:true,
-            expires: new Date(0)
+            expires: new Date(0),
+            sameSite:'strict'
         }
     )
 
