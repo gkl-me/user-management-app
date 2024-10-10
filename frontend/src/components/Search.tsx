@@ -12,7 +12,6 @@ const Search:React.FC = () => {
         </div>
         <div>
             <AddUserDialog>
-
             <Button variant={'blue'}>Add User</Button>
             </AddUserDialog>
         </div>

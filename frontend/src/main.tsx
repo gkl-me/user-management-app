@@ -13,6 +13,7 @@ import store from './redux/store.ts'
 import PrivateRoute from './components/PrivateRoute.tsx'
 import AdminLogin from './pages/AdminLoginPage.tsx'
 import AdminDashBoard from './pages/AdminDashBoard.tsx'
+import PrivateRouteAdmin from './components/PrivateRouteAdmin.tsx'
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -29,7 +30,11 @@ const router = createBrowserRouter(
       <Route path='/admin'>
         <Route index element={<Navigate to={'login'} replace/>} />
         <Route path='login' element={<AdminLogin/>}/>
-        <Route path='dashboard' element={<AdminDashBoard/>}/>
+
+        {/* private admin route */}
+        <Route path='' element={<PrivateRouteAdmin/>}>
+            <Route path='dashboard' element={<AdminDashBoard/>}/>
+        </Route>
       </Route>
     </Route>
   )

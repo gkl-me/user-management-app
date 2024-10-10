@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
@@ -12,6 +12,11 @@ import {
 } from './ui/form'
 import { Input } from './ui/input'
 import { Button } from './ui/button'
+import { useAppDispatch, useAppSelector } from '@/redux/store'
+import { loginAdmin } from '@/redux/slices/adminApiSlice'
+import Loading from './Loading'
+import { toast } from 'sonner'
+import { useNavigate } from 'react-router-dom'
 
 
 
@@ -20,33 +25,45 @@ const formSchema = z.object({
   password: z
     .string()
     .min(8, { message: 'Password must be at least 8 characters long' })
-    .regex(/[A-Z]/, { message: 'Password must contain at least one uppercase letter' })
     .regex(/[a-z]/, { message: 'Password must contain at least one lowercase letter' })
     .regex(/[0-9]/, { message: 'Password must contain at least one number' })
     .regex(/[^A-Za-z0-9]/, { message: 'Password must contain at least one special character' }),
 })
 
 const LoginAdmin: React.FC = () => {
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+
+    const navigate = useNavigate()
+    
+    const dispatch = useAppDispatch()
+    
+    const form = useForm<z.infer<typeof formSchema>>({
+        resolver: zodResolver(formSchema),
     defaultValues:{
         email: '',
       password: '',
     }
-  })
+})
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    try {
-      // Replace with your actual login logic
-      console.log('Form Submitted:', values)
-      // Example: await loginAPI(values)
-    } catch (error) {
-      console.error('Login failed:', error)
-      // Optionally set a global error message
+const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    await dispatch(loginAdmin(values))
+}
+const {users,loading,error} = useAppSelector(state => state.admin) 
+
+  const {reset} = form
+
+  useEffect(() => {
+    if (error) {
+        reset();
+        toast.error(error)
     }
-  }
+    if(users && users.length!=0){
+        navigate('/admin/dashboard')
+    }
+  }, [error,reset,users,navigate])
+
 
   return (
+    loading ? <Loading/> :
     <div className='flex-col items-center flex w-[45%] justify-center m-auto mt-20 p-10 shadow-sm rounded-md shadow-blue-400'>
         <div className='text-2xl font-extrabold '>Admin Login</div>
     <Form {...form}>
