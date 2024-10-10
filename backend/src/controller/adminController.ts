@@ -19,7 +19,7 @@ const adminLogin = asyncHandler(async (req:Request,res:Response) => {
 
         generateToken(res,adminEmail,'admin')
 
-        const users = await User.find({}).select('-password')
+        const users = await User.find({}).select('_id name email');
 
         res.status(200).json({users})
 
@@ -34,7 +34,7 @@ const adminLogin = asyncHandler(async (req:Request,res:Response) => {
 //route    GET /api/admin/users
 //@access  Private/admin
 const getAllUsers = asyncHandler(async (req,res) => {
-    const users = await User.find({}).select('-password')
+    const users = await User.find({}).select('_id name email');
     if(users){
         res.status(200).json({users})
     }else{
@@ -52,7 +52,7 @@ const searchUser = asyncHandler(async (req,res) => {
     const {search} = req.query;
 
     let query = {}
-    if(search){
+    if(search?.length!=0){
         query = {
             name: {
                 $regex:search,
@@ -60,7 +60,7 @@ const searchUser = asyncHandler(async (req,res) => {
             }
         }
     }
-    const users = await User.find(query);
+    const users = await User.find(query).select('_id name email');
     if(users){
         res.status(200).json({users})
     }else{
@@ -104,7 +104,7 @@ const addUser = asyncHandler(async (req,res) => {
         name,email,password
     })
 
-    const users = await User.find({}).select('-password')
+    const users = await User.find({}).select('_id name email');
 
     if(user && users){
         res.status(201).json({users})
@@ -127,13 +127,15 @@ const editUser = asyncHandler( async (req:Request,res:Response) => {
         user.name = req.body.name || user.name
         user.email = req.body.email || user.email
 
-        const updatedUser = await user.save()
-        const users = await User.find({})
-        if(updatedUser && users){
-            res.status(200).json({users})
-        }else{
+        try {
+            const updatedUser = await user.save()
+            const users = await User.find({}).select('_id name email');
+            if(updatedUser && users){
+                res.status(200).json({users})
+            }
+        } catch (error) {
             res.status(400)
-            throw new Error('User unable to updated')
+            throw new Error('User already exits')
         }
 
     }else{
@@ -150,8 +152,9 @@ const deleteUser = asyncHandler(async (req:Request,res:Response) => {
     const {id} = req.params
 
     const deletedUser =await User.findByIdAndDelete(id)
+    const users = await User.find({}).select('_id name email');
     if(deletedUser){
-        res.status(200).json({message:'User successfully deleted'})
+        res.status(200).json({users})
     }else{
         res.status(400)
         throw new Error('User unable to delete')
