@@ -41,7 +41,7 @@ const formSchema = z.object({
     const navigate = useNavigate()
 
     
-    const { data: profileData, isLoading, isSuccess: profileSuccess, error,refetch } = useGetProfileQuery(undefined,{
+    const { data: profileData, isLoading, error } = useGetProfileQuery(undefined,{
       refetchOnMountOrArgChange:true
     });
     
@@ -50,26 +50,31 @@ const formSchema = z.object({
     const form = useForm<z.infer<typeof formSchema>>({
       resolver: zodResolver(formSchema),
       defaultValues:{
-          name:userInfo.name,
-          email:userInfo.email,
+          name:userInfo?.name,
+          email:userInfo?.email,
           image: undefined  
       }
     })
 
-    const {reset} = form
-    
     useEffect(() => {
-      refetch();
-      reset();
-      if (error) {
-        dispatch(logout());
-        dispatch(apiSlice.util.resetApiState())
-        navigate("/login");
-        toast.error("Your account is not found. Please log in again.");
-      } else if (profileSuccess) {
+      if (profileData) {
+        form.reset({
+          name: profileData.name,
+          email: profileData.email
+        });
         dispatch(setCredentials({ ...profileData }));
       }
-    }, [refetch,error, dispatch, navigate, profileSuccess, profileData,reset]);
+    }, [profileData, form, dispatch]);
+  
+    
+    useEffect(() => {
+      if (error) {
+        dispatch(logout());
+        dispatch(apiSlice.util.resetApiState());
+        navigate("/login");
+        toast.error("Your account is not found. Please log in again.");
+      }
+    }, [error, dispatch, navigate]);
   
   
     const upload_ref = useRef<HTMLInputElement>(null)
