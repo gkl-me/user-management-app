@@ -41,7 +41,7 @@ const formSchema = z.object({
     const navigate = useNavigate()
 
     
-    const { data: profileData, isLoading, isSuccess: profileSuccess, error } = useGetProfileQuery(undefined,{
+    const { data: profileData, isLoading, isSuccess: profileSuccess, error,refetch } = useGetProfileQuery(undefined,{
       refetchOnMountOrArgChange:true
     });
     
@@ -59,6 +59,8 @@ const formSchema = z.object({
     const {reset} = form
     
     useEffect(() => {
+      refetch();
+      reset();
       if (error) {
         dispatch(logout());
         dispatch(apiSlice.util.resetApiState())
@@ -66,9 +68,8 @@ const formSchema = z.object({
         toast.error("Your account is not found. Please log in again.");
       } else if (profileSuccess) {
         dispatch(setCredentials({ ...profileData }));
-        reset();
       }
-    }, [error, dispatch, navigate, profileSuccess, profileData,reset]);
+    }, [refetch,error, dispatch, navigate, profileSuccess, profileData,reset]);
   
   
     const upload_ref = useRef<HTMLInputElement>(null)

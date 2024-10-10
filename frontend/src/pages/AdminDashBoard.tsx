@@ -3,7 +3,8 @@ import Loading from "@/components/Loading";
 import Search from "@/components/Search";
 import SidePanel from "@/components/SidePanel";
 import UserList from "@/components/UserList";
-import { getAllUsers, logoutAdmin } from "@/redux/slices/adminApiSlice";
+import { getAllUsers } from "@/redux/slices/adminApiSlice";
+import { clearError } from "@/redux/slices/adminSlice";
 import { useAppDispatch, useAppSelector } from "@/redux/store";
 import React, { useEffect } from "react";
 import {  useNavigate } from "react-router-dom";
@@ -15,20 +16,26 @@ const AdminDashBoard:React.FC = () => {
     const navigate = useNavigate();
     const {users,loading,error} = useAppSelector(state => state.admin)
 
+
+
     useEffect(() => {
-        const fetchUsers = async () => {
-            await dispatch(getAllUsers());
+      const fetchUsers = async () => {
+        const res = await dispatch(getAllUsers());
+    
+        if (getAllUsers.fulfilled.match(res)) {
+          // toast.success('Users successfully fetched');
         }
-        fetchUsers();
-        if(error){
-            toast.error(error)
-            async function logout() {
-              await dispatch(logoutAdmin())
-            }
-            logout()
-            navigate('/admin/login')
-        }
-    },[navigate,error,dispatch])
+      };
+    
+      fetchUsers();
+    }, [dispatch, navigate]);
+
+    useEffect(() => {
+      if (error) {
+        toast.error(error);
+        dispatch(clearError()); 
+      }
+    }, [error, dispatch,navigate]);
 
     return (
       loading ? <Loading/> :
@@ -38,7 +45,7 @@ const AdminDashBoard:React.FC = () => {
             <SidePanel />
             <div className="flex flex-col w-full">
               <Search />
-              <UserList />
+              <UserList users={users} />
             </div>
             </div>
         </>

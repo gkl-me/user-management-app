@@ -22,7 +22,11 @@ const initialState: AdminState = {
 const adminSlice = createSlice({
     name: 'admin',
     initialState,
-    reducers: {},
+    reducers: {
+        clearError: (state) => {
+            state.error = null;
+        }
+    },
     extraReducers: (builder) => {
         builder
             // Login cases
@@ -128,3 +132,6 @@ const adminSlice = createSlice({
 });
 
 export default adminSlice.reducer;  
+
+
+export const { clearError } = adminSlice.actions;

@@ -17,6 +17,7 @@ import { loginAdmin } from '@/redux/slices/adminApiSlice'
 import Loading from './Loading'
 import { toast } from 'sonner'
 import { useNavigate } from 'react-router-dom'
+import { clearError } from '@/redux/slices/adminSlice'
 
 
 
@@ -44,22 +45,22 @@ const LoginAdmin: React.FC = () => {
     }
 })
 
-const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    await dispatch(loginAdmin(values))
-}
-const {users,loading,error} = useAppSelector(state => state.admin) 
+    const { reset } = form;
+    const {loading, error} = useAppSelector(state => state.admin)
 
-  const {reset} = form
-
-  useEffect(() => {
-    if (error) {
+    useEffect(() => {
+      if(error) toast.error(error)
         reset();
-        toast.error(error)
+      dispatch(clearError())
+    },[error,reset,dispatch])
+
+const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    const res = await dispatch(loginAdmin(values))
+    if(loginAdmin.fulfilled.match(res)){
+      navigate('/admin/dashboard')
     }
-    if(users && users.length!=0){
-        navigate('/admin/dashboard')
-    }
-  }, [error,reset,users,navigate])
+}
+
 
 
   return (

@@ -44,27 +44,40 @@ export const getAllUsers = createAsyncThunk(
 
 export const searchUser = createAsyncThunk(
     'admin/searchUser',
-    async(data:{id:string},{rejectWithValue}) => {
-        try {
-            const res = await adminApi.get(`/users/search?search=${data}`)
-            return res.data.users
-        } catch (error) {
-            if(error instanceof AxiosError){
-                rejectWithValue(error?.response?.data.message)
+    async(data:{search:string}|undefined,{rejectWithValue}) => {
+        if(data?.search){
+            try {
+                const res = await adminApi.get(`/users/search?search=${data.search}`)
+                return res.data.users
+            } catch (error) {
+                if(error instanceof AxiosError){
+                    return rejectWithValue(error?.response?.data.message)
+                }
             }
+        }else{
+            try {
+                const res = await adminApi.get(`/users/search?search=`)
+                return res.data.users
+            } catch (error) {
+                if(error instanceof AxiosError){
+                    return rejectWithValue(error?.response?.data.message)
+                }
+            }
+
         }
     }
 )
 
 export const addUser = createAsyncThunk(
     'admin/addUser',
-    async(data:{name:string,email:string,password:string},{rejectWithValue}) => {
+    async(data:{name:string,email:string,password:string,confirmPassword:string},{rejectWithValue}) => {
         try {
             const res = await adminApi.post('/add',data)
             return res.data.users
         } catch (error) {
+            console.log(error)
             if(error instanceof AxiosError){
-                rejectWithValue(error?.response?.data.message)
+                return  rejectWithValue(error?.response?.data.message)
             }
         }
     }
@@ -87,7 +100,7 @@ export const editUser = createAsyncThunk(
             return res.data.users
         } catch (error) {
             if(error instanceof AxiosError){
-                rejectWithValue(error?.response?.data.message)
+                return  rejectWithValue(error?.response?.data.message)
             }
         }
     }
@@ -102,7 +115,7 @@ export const deleteUser = createAsyncThunk(
             
         } catch (error) {
             if(error instanceof AxiosError){
-                rejectWithValue(error?.response?.data.message)
+                return rejectWithValue(error?.response?.data.message)
             }
         }
     }
@@ -117,7 +130,7 @@ export const logoutAdmin = createAsyncThunk(
             return res.data.message
         } catch (error) {
             if(error instanceof AxiosError){
-                rejectWithValue(error?.response?.data.message)
+                return  rejectWithValue(error?.response?.data.message)
             }
         }
     }

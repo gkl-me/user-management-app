@@ -8,7 +8,7 @@ const PrivateRouteAdmin:React.FC = () => {
     const {users} = useAppSelector(state => state.admin)
 
   return (
-    (users && users.length!=0) ? 
+    (users) ? 
     <Outlet/> : <Navigate to={'/admin/login'} replace />
   )
 }
