@@ -106,6 +106,7 @@ const formSchema = z.object({
     }
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
+      console.log(values)
       try {
         const formData = new FormData();
         formData.append('name', values.name);
